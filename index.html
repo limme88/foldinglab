@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Folding Lab</title>
+<meta name="description" content="Folding Lab mentors high school students in Irvine, California, through their own computational biology research projects.">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow reading column; hero pairs the headline with a chain that folds from extended to compact (N to C colored). */
+:root {
+  --bg: #f2f5f6;
+  --surface: #ffffff;
+  --ink: #13232b;
+  --muted: #536770;
+  --line: #d3dde1;
+  --accent: #1f6f8b;
+  --display: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --body: "Newsreader", Georgia, "Times New Roman", serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1a1f; --surface: #15242b; --ink: #e4ecef; --muted: #93a7b0; --line: #26383f; --accent: #6cbad6; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1a1f; --surface: #15242b; --ink: #e4ecef; --muted: #93a7b0; --line: #26383f; --accent: #6cbad6; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--body); font-size: 1.1rem; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1040px; margin: 0 auto; }
+header.top {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding-block: 22px; border-bottom: 1px solid var(--line);
+}
+.wordmark { font-family: var(--display); font-weight: 700; font-size: 1.15rem; letter-spacing: -0.01em; color: var(--ink); text-decoration: none; }
+.wordmark span { color: var(--accent); }
+nav { display: flex; gap: 20px; flex-wrap: wrap; }
+nav a { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); text-decoration: none; letter-spacing: 0.04em; text-transform: uppercase; }
+nav a:hover, nav a:focus-visible { color: var(--accent); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.hero { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; padding-block: 64px 48px; }
+.hero > * { min-width: 0; }
+.seq { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); letter-spacing: 0.12em; word-break: break-all; margin: 0 0 18px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -0.02em; }
+h1 { font-size: clamp(2.3rem, 5.5vw, 3.6rem); line-height: 1.04; font-weight: 700; }
+.lede { font-size: 1.25rem; color: var(--muted); max-width: 36ch; margin: 20px 0 28px; }
+.btn {
+  display: inline-block; font-family: var(--display); font-weight: 700; font-size: 1rem;
+  background: var(--ink); color: var(--bg); padding: 12px 22px; border-radius: 4px; text-decoration: none;
+}
+.btn:hover { background: var(--accent); }
+canvas#chain { width: 100%; aspect-ratio: 1 / 1; max-width: 100%; display: block; }
+
+section { padding-block: 56px; border-top: 1px solid var(--line); }
+.label { font-family: var(--mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin: 0 0 12px; }
+h2 { font-size: clamp(1.7rem, 3.4vw, 2.3rem); line-height: 1.12; margin-bottom: 18px; }
+.prose { max-width: 62ch; }
+.prose p { margin: 0 0 1em; }
+
+.projects { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+.project { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 20px 22px; }
+.project h3 { font-size: 1.1rem; margin-bottom: 6px; }
+.project p { margin: 0; color: var(--muted); font-size: 1rem; }
+.project .tool { font-family: var(--mono); font-size: 0.72rem; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; display: block; margin-bottom: 10px; }
+
+ol.steps { list-style: none; padding: 0; margin: 28px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; counter-reset: s; }
+ol.steps li { counter-increment: s; border-top: 3px solid var(--ink); padding-top: 14px; }
+ol.steps li::before { content: "Step " counter(s); font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+ol.steps h3 { font-size: 1.1rem; margin: 6px 0; }
+ol.steps p { margin: 0; color: var(--muted); font-size: 1rem; }
+
+.contact { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 20px; }
+.email { font-family: var(--mono); font-size: 1rem; background: var(--surface); border: 1px solid var(--line); padding: 10px 14px; border-radius: 4px; user-select: all; }
+button.copy { font-family: var(--display); font-weight: 700; font-size: 0.95rem; background: transparent; color: var(--ink); border: 1px solid var(--ink); border-radius: 4px; padding: 10px 16px; cursor: pointer; }
+button.copy:hover { border-color: var(--accent); color: var(--accent); }
+
+.links { display: flex; gap: 20px; flex-wrap: wrap; margin: 4px 0 0; }
+.links a { font-family: var(--mono); font-size: 0.8rem; color: var(--accent); letter-spacing: 0.04em; text-transform: uppercase; text-underline-offset: 3px; }
+
+footer { padding-block: 32px 48px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.95rem; }
+
+@media (max-width: 780px) {
+  .hero { grid-template-columns: 1fr; padding-block: 40px 32px; gap: 24px; }
+  canvas#chain { max-width: 360px; margin: 0 auto; }
+  .projects { grid-template-columns: 1fr; }
+  ol.steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 460px) { ol.steps { grid-template-columns: 1fr; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <a class="wordmark" href="#top">Folding<span>Lab</span></a>
+    <nav aria-label="Sections">
+      <a href="#about">About</a>
+      <a href="#projects">Projects</a>
+      <a href="#how">How it works</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <div class="hero">
+      <div>
+        <p class="seq" aria-hidden="true">M-E-N-T-O-R … R-E-S-E-A-R-C-H … P-R-E-S-E-N-T</p>
+        <h1>Real research, from your first question to your first poster.</h1>
+        <p class="lede">Folding Lab mentors high school students in Irvine, especially first-generation and underrepresented students, through their own STEM research projects.</p>
+        <a class="btn" href="#contact">Get in touch</a>
+      </div>
+      <canvas id="chain" role="img" aria-label="A chain of beads folding from a straight line into a compact protein-like shape"></canvas>
+    </div>
+
+    <section id="about">
+      <p class="label">Mission</p>
+      <h2>Research shouldn't depend on who you already know.</h2>
+      <div class="prose">
+        <p>Many high school research opportunities go to students whose families already have connections to labs and universities. Folding Lab exists for students who have the curiosity but not the network.</p>
+        <p>Students work one-on-one with a mentor to choose a question, learn the methods, and carry a project through to a conference presentation, with publication as a goal for projects that get there.</p>
+        <p><strong>Who it's for:</strong> high school students in and around Irvine, with priority for first-generation college-bound students and students from groups underrepresented in STEM. No prior research or coding experience is needed.</p>
+      </div>
+    </section>
+
+    <section id="projects">
+      <p class="label">Example projects</p>
+      <h2>Projects you can run on a laptop.</h2>
+      <div class="prose"><p>Projects focus on computational biology, so students can do real research without access to a wet lab.</p></div>
+      <div class="projects">
+        <div class="project"><span class="tool">Structure prediction</span><h3>How does a mutation change a protein?</h3><p>Compare predicted structures of a normal and disease-linked protein and explain what changes.</p></div>
+        <div class="project"><span class="tool">Molecular docking</span><h3>Which molecules might bind a drug target?</h3><p>Screen candidate compounds against a protein pocket and rank the most promising.</p></div>
+        <div class="project"><span class="tool">Molecular dynamics</span><h3>How do flexible proteins move?</h3><p>Simulate a protein over time and measure how its shape shifts and changes.</p></div>
+        <div class="project"><span class="tool">Bioinformatics</span><h3>What can public data tell us?</h3><p>Ask a question using open databases such as the Protein Data Bank and UniProt.</p></div>
+      </div>
+    </section>
+
+    <section id="how">
+      <p class="label">How it works</p>
+      <h2>From first meeting to first presentation.</h2>
+      <ol class="steps">
+        <li><h3>Reach out</h3><p>Tell us a bit about yourself and what interests you.</p></li>
+        <li><h3>Find a question</h3><p>Work with your mentor to choose a project that fits your interests.</p></li>
+        <li><h3>Do the research</h3><p>Learn the tools, run the analysis, and interpret the results with regular check-ins.</p></li>
+        <li><h3>Share it</h3><p>Prepare a poster or talk for a conference, and a paper if the results support one.</p></li>
+      </ol>
+    </section>
+
+    <section id="mentor">
+      <p class="label">Mentor</p>
+      <h2>Liam Kwak</h2>
+      <div class="prose">
+        <p>Liam is a postbaccalaureate researcher in computational structural biology who studies intrinsically disordered proteins with molecular simulation. He started Folding Lab to give students the kind of research mentorship that is hard to find without connections.</p>
+      </div>
+      <p class="links">
+        <a href="https://www.linkedin.com/in/liam-kwak-5413b8250" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://orcid.org/0009-0009-4949-9686" target="_blank" rel="noopener">ORCID</a>
+      </p>
+    </section>
+
+    <section id="contact">
+      <p class="label">Contact</p>
+      <h2>Interested? Send an email.</h2>
+      <div class="prose"><p>Students, parents, and teachers are all welcome to reach out. Students under 18 should include a parent or guardian on the email.</p></div>
+      <div class="contact">
+        <span class="email" id="email">liam.kwak@pomona.edu</span>
+        <button class="copy" id="copyBtn" type="button">Copy email</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>Folding Lab · Irvine, California</footer>
+</div>
+
+<script>
+(function () {
+  var btn = document.getElementById('copyBtn');
+  var emailEl = document.getElementById('email');
+  btn.addEventListener('click', function () {
+    var text = emailEl.textContent.trim();
+    function selectIt() {
+      var r = document.createRange(); r.selectNodeContents(emailEl);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = 'Selected: press copy';
+    }
+    try {
+      navigator.clipboard.writeText(text).then(function () { btn.textContent = 'Copied'; setTimeout(function(){ btn.textContent = 'Copy email'; }, 1800); }, selectIt);
+    } catch (e) { selectIt(); }
+  });
+
+  var canvas = document.getElementById('chain');
+  var ctx = canvas.getContext('2d');
+  var N = 46;
+  var extended = [], folded = [];
+  // Extended: a gentle zigzag across the canvas (unit coords 0..1)
+  for (var i = 0; i < N; i++) {
+    var x = 0.06 + 0.88 * i / (N - 1);
+    extended.push({ x: x, y: 0.5 + (i % 2 ? 0.025 : -0.025), z: 0 });
+  }
+  // Folded: three antiparallel helices joined by loops (projected 3D helix bundle)
+  var segs = [[0, 14, 0.30, 1], [16, 30, 0.50, -1], [32, 45, 0.70, 1]];
+  for (var j = 0; j < N; j++) {
+    var p = null;
+    for (var k = 0; k < segs.length; k++) {
+      var sg = segs[k];
+      if (j >= sg[0] && j <= sg[1]) {
+        var f = (j - sg[0]) / (sg[1] - sg[0]);
+        var yy = sg[3] > 0 ? 0.2 + 0.6 * f : 0.8 - 0.6 * f;
+        var ang = j * 1.75;
+        p = { x: sg[2] + 0.075 * Math.cos(ang), y: yy, z: Math.sin(ang) };
+      }
+    }
+    folded.push(p);
+  }
+  for (var m = 0; m < N; m++) {
+    if (!folded[m]) {
+      var a = folded[m - 1], b = folded[m + 1] || folded[m - 1];
+      var top = a.y < 0.5;
+      folded[m] = { x: (a.x + b.x) / 2, y: top ? 0.12 : 0.88, z: 0.6 };
+    }
+  }
+  function color(i, alpha) {
+    var h = 220 - 220 * i / (N - 1); // N-terminus blue to C-terminus red
+    return 'hsla(' + h + ', 70%, 52%, ' + alpha + ')';
+  }
+  function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  var t = 0;
+  function draw() {
+    var r = canvas.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    var w = Math.max(1, Math.round(r.width * dpr));
+    if (canvas.width !== w) { canvas.width = w; canvas.height = w; }
+    var S = canvas.width;
+    ctx.clearRect(0, 0, S, S);
+    var e = ease(t);
+    var pts = [];
+    for (var i = 0; i < N; i++) {
+      var A = extended[i], B = folded[i];
+      pts.push({ x: (A.x + (B.x - A.x) * e) * S, y: (A.y + (B.y - A.y) * e) * S, z: A.z + (B.z - A.z) * e, i: i });
+    }
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    for (var s = 0; s < N - 1; s++) {
+      ctx.strokeStyle = color(s, 0.55);
+      ctx.lineWidth = S * 0.012;
+      ctx.beginPath(); ctx.moveTo(pts[s].x, pts[s].y); ctx.lineTo(pts[s + 1].x, pts[s + 1].y); ctx.stroke();
+    }
+    var order = pts.slice().sort(function (a, b) { return a.z - b.z; });
+    order.forEach(function (p) {
+      var rad = S * (0.016 + 0.006 * (p.z + 1) / 2);
+      ctx.fillStyle = color(p.i, 0.55 + 0.45 * (p.z + 1) / 2);
+      ctx.beginPath(); ctx.arc(p.x, p.y, rad, 0, Math.PI * 2); ctx.fill();
+    });
+  }
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) { t = 1; draw(); }
+  else {
+    var start = null, dur = 2600, delay = 400;
+    function step(ts) {
+      if (start === null) start = ts;
+      t = Math.min(1, Math.max(0, (ts - start - delay) / dur));
+      draw();
+      if (t < 1) requestAnimationFrame(step);
+    }
+    draw();
+    requestAnimationFrame(step);
+  }
+  window.addEventListener('resize', draw);
+})();
+</script>
